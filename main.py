@@ -5,7 +5,7 @@ import sys
 scriptpath = "./"
 sys.path.append(scriptpath)
 
-from simulator import run_BB84_sim, run_BB84_sim_with_noise
+from Simulator import run_BB84_sim, run_BB84_sim_with_noise
 
 import logging
 logging.basicConfig(

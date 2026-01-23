@@ -11,11 +11,12 @@ from netsquid.components.models import  FibreDelayModel
 from difflib import SequenceMatcher
 from random import Random
 
-import Alice
-import Bob
+import alice
+import bob
 
 from utils import ManualFibreLossModel
 from cascade import cascade_reconcile
+from privacy_amplification import toeplitz_hash
 
 import logging
 logger = logging.getLogger(__name__)
@@ -74,8 +75,8 @@ def run_BB84_sim(runtimes=1,num_bits=20,fibreLen=10**-9,memNoiseMmodel=None,proc
         nodeA.connect_to(nodeB, MyCChannel2,
                             local_port_name="portCA_2", remote_port_name="portCB_2")
 
-        Alice_protocol = Alice.Protocol(nodeA,Alice_processor,num_bits,sourceFreq=sourceFreq)
-        Bob_protocol = Bob.Protocol(nodeB,Bob_processor,num_bits)
+        Alice_protocol = alice.Protocol(nodeA,Alice_processor,num_bits,sourceFreq=sourceFreq)
+        Bob_protocol = bob.Protocol(nodeB,Bob_processor,num_bits)
         Bob_protocol.start()
         Alice_protocol.start()
 
@@ -155,6 +156,8 @@ def run_BB84_sim_with_noise(
     cascade_block_size=16,
     cascade_rounds=4,
     cascade_final_single_bit_pass=True,
+    pa_output_frac=0.5,
+    pa_seed=0,
     seed=None,
 ):
     """
@@ -163,6 +166,8 @@ def run_BB84_sim_with_noise(
     MyKeyList_A = []
     MyKeyList_B_noisy = []
     MyKeyList_B_corrected = []
+    MyKeyList_A_final = []
+    MyKeyList_B_final = []
     MyKeyRateList = []
     MyCascadeStats = []
 
@@ -237,8 +242,8 @@ def run_BB84_sim_with_noise(
         nodeB.connect_to(nodeA, MyCChannel, local_port_name="portCB_1", remote_port_name="portCA_1")
         nodeA.connect_to(nodeB, MyCChannel2, local_port_name="portCA_2", remote_port_name="portCB_2")
 
-        Alice_protocol = Alice.Protocol(nodeA, Alice_processor, num_bits, sourceFreq=sourceFreq)
-        Bob_protocol = Bob.Protocol(nodeB, Bob_processor, num_bits)
+        Alice_protocol = alice.Protocol(nodeA, Alice_processor, num_bits, sourceFreq=sourceFreq)
+        Bob_protocol = bob.Protocol(nodeB, Bob_processor, num_bits)
         Bob_protocol.start()
         Alice_protocol.start()
 
@@ -284,12 +289,27 @@ def run_BB84_sim_with_noise(
             stats["parity_checks"],
         )
 
+        pa_len = int(len(firstKey) * pa_output_frac)
+        final_a_key = toeplitz_hash(firstKey, pa_len, seed=pa_seed)
+        final_b_key = toeplitz_hash(corrected_b_key, pa_len, seed=pa_seed)
+        logger.info("Privacy amplification: output_len=%s", pa_len)
+
         MyKeyList_A.append(firstKey)
         MyKeyList_B_noisy.append(noisy_b_key)
         MyKeyList_B_corrected.append(corrected_b_key)
+        MyKeyList_A_final.append(final_a_key)
+        MyKeyList_B_final.append(final_b_key)
         MyCascadeStats.append(stats)
 
-        s = SequenceMatcher(None, firstKey, corrected_b_key)
-        MyKeyRateList.append(len(corrected_b_key) * s.ratio() / (endTime - startTime) * 10**9)
+        s = SequenceMatcher(None, final_a_key, final_b_key)
+        MyKeyRateList.append(len(final_b_key) * s.ratio() / (endTime - startTime) * 10**9)
 
-    return MyKeyList_A, MyKeyList_B_noisy, MyKeyList_B_corrected, MyKeyRateList, MyCascadeStats
+    return (
+        MyKeyList_A,
+        MyKeyList_B_noisy,
+        MyKeyList_B_corrected,
+        MyKeyList_A_final,
+        MyKeyList_B_final,
+        MyKeyRateList,
+        MyCascadeStats,
+    )
