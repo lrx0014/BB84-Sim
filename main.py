@@ -5,7 +5,7 @@ import sys
 scriptpath = "./"
 sys.path.append(scriptpath)
 
-from Simulator import run_BB84_sim, run_BB84_sim_with_noise
+from simulator import run_BB84_sim, run_BB84_sim_with_noise
 
 import logging
 logging.basicConfig(
@@ -55,7 +55,11 @@ if __name__ == "__main__":
     logger.info("BB84+noise summary: runs=%s", len(noisy[3]))
     logger.info("BB84+noise key lengths A:%s", [len(k) for k in noisy[0]])
     logger.info("BB84+noise key lengths B (after):%s", [len(k) for k in noisy[2]])
+    logger.info("BB84+noise final key lengths A:%s", [len(k) for k in noisy[3]])
+    logger.info("BB84+noise final key lengths B:%s", [len(k) for k in noisy[4]])
     logger.debug("BB84+noise key list A:%s", noisy[0])
     logger.debug("BB84+noise key list B (before):%s", noisy[1])
     logger.debug("BB84+noise key list B (after):%s", noisy[2])
-    logger.debug("BB84+noise key rate list:%s", noisy[3])
+    logger.debug("BB84+noise final key list A:%s", noisy[3])
+    logger.debug("BB84+noise final key list B:%s", noisy[4])
+    logger.debug("BB84+noise key rate list:%s", noisy[5])
