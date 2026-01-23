@@ -75,14 +75,14 @@ class Protocol(NodeProtocol):
         port=self.node.ports[self.portNameC1]
         yield self.await_port_input(port)
         basis_B = port.rx_input().items
-        logger.info("A received basis from B:%s", basis_B)
+        logger.debug("Alice received basis from Bob:%s", basis_B)
         
         # send A basis to B
         self.node.ports[self.portNameC2].tx_output(self.HbasisList)
 
         self.key=CompareBasis(self.HbasisList,basis_B,self.XbasisList)
         #logger.info("A nHbasis:%s\n nXbasis:%s\n matchA:%s\n", nHbasis, nXbasis, matchA)
-        logger.info("A key:%s", self.key)
+        logger.debug("Alice key (sifted):%s", self.key)
         
 
     def storeSourceOutput(self,qubit):
@@ -106,4 +106,3 @@ class Protocol(NodeProtocol):
             #print("alread connected") 
             
         clock.start()
-

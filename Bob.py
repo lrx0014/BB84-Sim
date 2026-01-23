@@ -9,27 +9,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-'''
-To add value -1 on tarList at positions given by lossList.
-input:
-    lossList: A list indecates positions to add -1. (list of int)
-    tarList: List to add -1. (list of any)
-output:
-    tarList: target List.(list of any)
-'''
+# add -1 to simulate loss/noise
 def AddLossCase(lossList,tarList):
     for i in range(len(lossList)):
         tarList.insert(lossList[i],-1)
     return tarList
 
 
-'''
-input:
-    Pg: A quantum program (QuantumProgram)
-output:
-    resList: A list of outputs from the given quantum program, 
-    also sorted by key.(list of int)
-'''
 class QG_B_measure(QuantumProgram):
     def __init__(self,basisList,num_bits):
         self.basisList=basisList
@@ -39,7 +25,7 @@ class QG_B_measure(QuantumProgram):
 
     def program(self):   
         if len(self.basisList)!=self.num_bits:
-            logger.error("B measurement error! List length did not match!")
+            logger.error("Bob measurement error: basis length did not match")
 
         else:
             for i in range(len(self.basisList)):
@@ -98,7 +84,7 @@ class Protocol(NodeProtocol):
             tmp=self.myQG_B_measure.output[str(i)][0]
             self.loc_measRes.append(tmp)
         
-        logger.info("B meas res:%s", self.loc_measRes)
+        logger.debug("Bob measurement results:%s", self.loc_measRes)
         
         # self.B_send_basis()
         self.node.ports[self.portNameC1].tx_output(self.basisList)
@@ -107,10 +93,10 @@ class Protocol(NodeProtocol):
         port=self.node.ports[self.portNameC2]
         yield self.await_port_input(port)
         basis_A=port.rx_input().items
-        logger.info("B received basis_A:%s", basis_A)
+        logger.debug("Bob received basis from Alice:%s", basis_A)
         
         self.key=CompareBasis(self.basisList,basis_A,self.loc_measRes)
         
-        logger.info("B key:%s", self.key)
+        logger.debug("Bob key (sifted):%s", self.key)
 
         self.endTime=ns.util.simtools.sim_time(magnitude=ns.NANOSECOND)
