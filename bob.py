@@ -63,14 +63,14 @@ class Protocol(NodeProtocol):
         
         qubitList=[]
         
-        #receive qubits from A
+        #receive qubits from Alice
         
         port = self.node.ports[self.portNameQ1]
         yield self.await_port_input(port)
         qubitList.append(port.rx_input().items)
         #logger.info("B received qubits:%s", qubitList)
         
-        #put qubits into B memory
+        #put qubits into Bob's memory
         for qubit in qubitList:
             self.processor.put(qubit)
         

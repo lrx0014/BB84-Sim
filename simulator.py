@@ -132,6 +132,7 @@ def _run_bb84_once(
 
     return Alice_protocol.key, Bob_protocol.key, startTime, endTime
 
+# baseline
 def run_BB84_sim(
     runtimes=1,
     num_bits=20,

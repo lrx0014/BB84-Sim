@@ -54,7 +54,7 @@ class Protocol(NodeProtocol):
         self.sourceFreq=sourceFreq
         
         # generate qubits from source
-        self.A_Source = QSource("Alice_source",status=SourceStatus.EXTERNAL) # enable frequency
+        self.A_Source = QSource("Alice_source",status=SourceStatus.EXTERNAL)
         self.A_Source.ports["qout0"].bind_output_handler(self.storeSourceOutput)
         
         
@@ -103,6 +103,6 @@ class Protocol(NodeProtocol):
             clock.ports["cout"].connect(self.A_Source.ports["trigger"])
         except:
             pass
-            #print("alread connected") 
+            #print("already connected") 
             
         clock.start()
